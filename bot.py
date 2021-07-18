@@ -21,9 +21,9 @@ def myfunc(q, t):
         js = json.loads(message)
         if js['type'] != 'ping' and js['type'] != 'error':
             print("\n cool")
-            price = (js['data'][-1]['p'])
+            price = float(js['data'][-1]['p'])
             print(price)
-            q.put(item = price, block=True, timeout= None)
+            q.put(item = float(price), block=True, timeout= None)
 
     def on_error(ws, error):
         print(error)
@@ -44,7 +44,7 @@ def myfunc(q, t):
     ws.on_open = on_open
     ws.run_forever()
 
-def starter():
+async def starter():
     active = []
     actives = []
     last_prices = []
@@ -72,7 +72,7 @@ def starter():
             while x == True:
                 if q is not None:
                     try:
-                        item = int(q.get(timeout = 1))
+                        item = float(q.get(timeout = 1))
                         list.append(item)
                     except queue.Empty:
                         x = False
@@ -89,14 +89,10 @@ def starter():
                 last_prices[i] = price
                 message = ">>> current price of " + str(db[i][1]) + " is " + str(price) + ". \n That's " + str(diff) + " " + word + " than the last price."
                 channel = client.get_channel(id)
-                print(channel)
-                async def send(channel, message):
-                    print('sending')
-                    await channel.send(message)
+                await channel.send(message)
 
-                send(channel, message)
             
-        time.sleep(1)
+        time.sleep(3600)
 
 @client.event
 async def on_ready():
@@ -109,7 +105,7 @@ async def on_message(message):
     if message.author == client.user:
         return
     if running == False:
-        threading.Thread(target = starter).start()
+        await starter()
         running = True
 
     if message.content.startswith('$program'):
@@ -130,4 +126,4 @@ async def on_message(message):
             json.dump(db, f)
 
 if __name__ == "__main__":
-    client.run("NzM4NTIyNjI1ODg1ODY0MTAw.XyNIyw.-tMplKVR3xjJ3fribhoVxgkQSMI")
+    client.run("NzM4NTIyNjI1ODg1ODY0MTAw.XyNIyw.dT59nua7GhEVpsbfth2w8ewJsI8")
