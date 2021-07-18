@@ -126,4 +126,4 @@ async def on_message(message):
             json.dump(db, f)
 
 if __name__ == "__main__":
-    client.run("NzM4NTIyNjI1ODg1ODY0MTAw.XyNIyw.dT59nua7GhEVpsbfth2w8ewJsI8")
+    client.run("token")
