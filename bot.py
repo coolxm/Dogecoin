@@ -21,7 +21,7 @@ def myfunc(q, t):
         js = json.loads(message)
         if js['type'] != 'ping' and js['type'] != 'error':
             print("\n cool")
-            price = (js['data'][0]['p'])
+            price = (js['data'][-1]['p'])
             print(price)
             q.put(item = price, block=True, timeout= None)
 
@@ -45,13 +45,11 @@ def myfunc(q, t):
     ws.run_forever()
 
 def starter():
-    print('here')
-    print(threading.main_thread)
-    print(threading.current_thread())
     active = []
     actives = []
     last_prices = []
     while True:
+        print("hi")
         db = json.load(open("channels.json"))
         for i in range(len(db)):
             if not db[i][1] in actives:
@@ -64,40 +62,41 @@ def starter():
 
         for i in range(len(db)):
             id = db[i][0]
-            print(id)
             q = None
             for ii in range(len(active)):
-                print(ii)
                 if active[ii][0] == db[i][1]:
                     q = active[ii][1]
         
-        
-            
             list = []
-            while True:
+            x = True
+            while x == True:
                 if q is not None:
                     try:
-                        item = int(q.get(timeout = 0.5))
+                        item = int(q.get(timeout = 1))
                         list.append(item)
                     except queue.Empty:
-                        break
+                        x = False
             
-            price = list[-1]
-            diff = price - last_prices[i]
-            if diff > 0:
-                word = "higher"
-            else:
-                word = "lower"
-                diff = str(diff).pop(0)
-            last_prices[i] = price
-            message = ">>> current price of " + str(db[i][1]) + " is " + str(price) + ". \n That's " + diff + " " + word + " than the last price."
-            channel = client.get_channel(id)
-            send(channel, message)
+            print(list)
+            if list != []:
+                price = list[-1]
+                diff = price - last_prices[i]
+                if diff > 0:
+                    word = "higher"
+                else:
+                    word = "lower"
+                    diff = abs(diff)
+                last_prices[i] = price
+                message = ">>> current price of " + str(db[i][1]) + " is " + str(price) + ". \n That's " + str(diff) + " " + word + " than the last price."
+                channel = client.get_channel(id)
+                print(channel)
+                async def send(channel, message):
+                    print('sending')
+                    await channel.send(message)
+
+                send(channel, message)
             
-            async def send(channel, message):
-                await channel.send(message)
-            
-            time.sleep(10)
+        time.sleep(1)
 
 @client.event
 async def on_ready():
@@ -110,7 +109,6 @@ async def on_message(message):
     if message.author == client.user:
         return
     if running == False:
-        print('we are a go')
         threading.Thread(target = starter).start()
         running = True
 
@@ -132,4 +130,4 @@ async def on_message(message):
             json.dump(db, f)
 
 if __name__ == "__main__":
-    client.run("NzM4NTIyNjI1ODg1ODY0MTAw.XyNIyw.RzPp2rCmlYYPuoGQaswbXC_zy80")
+    client.run("NzM4NTIyNjI1ODg1ODY0MTAw.XyNIyw.-tMplKVR3xjJ3fribhoVxgkQSMI")
